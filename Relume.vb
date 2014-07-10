@@ -5,12 +5,14 @@ Imports CupCake.Messages.Blocks
 Imports System.Timers
 Imports CupCake.Players
 Imports CupCake.Upload
+Imports CupCake.World
 
 Public Class Relume
     Inherits CupCakeMuffin(Of Relume)
 
     Dim Random As New Random
     Dim WithEvents DayTimer As Timer
+    Dim DayCount As Integer = 0
     Dim WithEvents ActionTimer As Timer
     Dim Stats As New Stats
 
@@ -25,17 +27,27 @@ Public Class Relume
         Events.Bind(Of JoinCompleteRoomEvent)(AddressOf JoinComplete)
         Events.Bind(Of MovePlayerEvent)(AddressOf MovePlayer)
         Events.Bind(Of AutoTextPlayerEvent)(AddressOf AutoTextPlayer)
+        Events.Bind(Of PlaceWorldEvent)(AddressOf PlaceWorld)
     End Sub
 
     Private Sub JoinComplete(ByVal sender As Object, ByVal e As JoinCompleteRoomEvent)
-        GameTimer = GetTimer(10000)
+        DayTimer = GetTimer(200000)
         ActionTimer = GetTimer(500)
+        DayTimer.Start()
+    End Sub
+
+    Private Sub PlaceWorld(ByVal sender As Object, ByVal e As PlaceWorldEvent)
+        If e.WorldBlock.Block = Block.BgBasicGrey Then
+            Chatter.Chat("COORDS: " & e.WorldBlock.X & " - " & e.WorldBlock.Y)
+        End If
     End Sub
 
     Private Sub MovePlayer(ByVal sender As Object, ByVal e As MovePlayerEvent)
+        Dim p As Player = e.Player
         Dim x As Integer = e.Player.BlockX
         Dim y As Integer = e.Player.BlockY
         Dim xM As Integer = e.InnerEvent.ModifierX
+        Dim yM As Integer = e.InnerEvent.ModifierY
         Dim yS As Integer = e.InnerEvent.SpeedY
 
         'ON LEFT / RIGHT PRESS
@@ -53,6 +65,34 @@ Public Class Relume
                 RemoveBlock(New RelumeBlock(Layer.Foreground, x, y))
             End If
         End If
+
+        'ON DOWN ON DOT
+        If yM = 1 And Not p.IsGod Then
+            'CHECK FOR FIREPLACE
+            If WorldService(Layer.Foreground, x, y + 1).Block = Block.SciFiBrown Then
+                If WorldService(Layer.Foreground, x + 2, y + 1).Block = Block.GravityNothing Then
+                    Chatter.Teleport(p.Username, x + 2, y)
+                ElseIf WorldService(Layer.Foreground, x - 2, y + 1).Block = Block.GravityNothing Then
+                    Chatter.Teleport(p.Username, x - 2, y + 1)
+                Else
+                    Chatter.Teleport(p.Username, 86, 81)
+                End If
+            End If
+            UploadService.UploadBlock(x, y, Block.HazardFire)
+            UploadService.UploadBlock(Layer.Background, x, y, Block.BgPastelYellow)
+            UploadService.UploadBlock(Layer.Background, x - 1, y, Block.BgPastelLimeGreen)
+            UploadService.UploadBlock(Layer.Background, x + 1, y, Block.BgPastelLimeGreen)
+            UploadService.UploadBlock(Layer.Background, x, y - 1, Block.BgPastelLimeGreen)
+            UploadService.UploadBlock(Layer.Background, x - 2, y, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x + 2, y, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x - 2, y - 1, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x + 2, y - 1, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x - 1, y - 1, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x + 1, y - 1, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x - 1, y - 2, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x + 1, y - 2, Block.BgNormalLightBlue)
+            UploadService.UploadBlock(Layer.Background, x, y - 2, Block.BgNormalLightBlue)
+        End If
     End Sub
 
     Private Sub AutoTextPlayer(ByVal sender As Object, ByVal e As AutoTextPlayerEvent)
@@ -60,12 +100,14 @@ Public Class Relume
             Dim p As Player = e.Player
             Dim x As Integer = p.BlockX
             Dim y As Integer = p.BlockY
-            Dim b As Block = WorldService(Layer.Foreground, x, y + 1).Block
+            Dim b As Block = WorldService(Layer.Foreground, x + 1, y + 1).Block
             If 33 < b And b < 37 Then
                 If Stats.Wood > 50 Then
-                    UploadService.UploadBlock(Layer.Foreground, x, y + 1, Block.SciFiBrown)
+                    UploadService.UploadBlock(Layer.Foreground, x + 1, y, Block.GravityDot)
+                    UploadService.UploadBlock(Layer.Foreground, x + 1, y + 1, Block.SciFiBrown)
                     Stats.Wood -= 50
                     Chatter.Chat(p.Username.ToUpper & " made a Fireplace! (Cost: 50; Left: " & Stats.Wood & ")")
+                    UploadService.UploadLabel(86, 81, LabelBlock.DecorationSign, "Wood: " & Stats.Wood & " | Exp: " & Stats.Experience)
                 End If
             End If
         End If
@@ -101,13 +143,45 @@ Public Class Relume
 
         'REPLANTING 
         UploadService.UploadBlock(rB.X, rB.Y, Block.DecorSpring2011Flower)
-        Dim tree As New RelumeTree(UploadService, rB.X, rB.Y, 1)
+        Dim tree As New RelumeTree(UploadService, rB.X, rB.Y)
     End Sub
 
 
-
     Private Sub DayTick() Handles DayTimer.Elapsed
+        DayCount += 1
+        Dim tempList As New List(Of RelumeBlock)
+        Dim b As Block
 
+        For y = WorldService.RoomHeight - 1 To 1 Step -1
+            For x As Integer = 1 To WorldService.RoomWidth - 1
+                If WorldService(Layer.Background, x, y).Block = WorldService(Layer.Background, 86, 81).Block Then
+                    tempList.Add(New RelumeBlock(Layer.Background, x, y))
+                End If
+            Next
+        Next
+
+        If DayCount = 0 Then
+            b = Block.BgPastelLightBlue
+        ElseIf DayCount = 1 Then
+            b = Block.BgPastelDarkerBlue
+        ElseIf DayCount = 2 Then
+            b = Block.BgNormalLightBlue
+        ElseIf DayCount = 3 Then
+            b = Block.BgDarkLightBlue
+        ElseIf DayCount = 4 Then
+            b = Block.BgNormalDarkBlue
+        ElseIf DayCount = 5 Then
+            Chatter.Chat("Its getting dark..")
+            b = Block.BgDarkDarkBlue
+
+        ElseIf DayCount = 6 Then
+            Chatter.Chat("Its getting even darker..")
+            b = Block.BgMarsNoStars
+        End If
+
+        For Each rB In tempList
+            UploadService.UploadBlock(rB.Layer, rB.X, rB.Y, b)
+        Next
     End Sub
 
     Private Sub ActionTick() Handles ActionTimer.Elapsed
@@ -117,6 +191,7 @@ Public Class Relume
     Private Sub RemoveBlock(rB As RelumeBlock)
         Stats.ItemAction(WorldService(rB.Layer, rB.X, rB.Y).Block)
         UploadService.UploadBlock(rB.Layer, rB.X, rB.Y, Block.GravityNothing)
+        UploadService.UploadLabel(86, 81, LabelBlock.DecorationSign, "Wood: " & Stats.Wood & " | Exp: " & Stats.Experience)
     End Sub
 
 #Region "old"
