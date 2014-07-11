@@ -127,6 +127,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\RelumeDownEvent.vb" />
     <Compile Include="Relume.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -144,6 +145,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="RelumeBlock.vb" />
+    <Compile Include="Events\RelumeJumpEvent.vb" />
+    <Compile Include="RelumeFire.vb" />
     <Compile Include="RelumeTree.vb" />
   </ItemGroup>
   <ItemGroup>

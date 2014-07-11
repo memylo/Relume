@@ -6,6 +6,7 @@ Imports System.Timers
 Imports CupCake.Players
 Imports CupCake.Upload
 Imports CupCake.World
+Imports System.ComponentModel
 
 Public Class Relume
     Inherits CupCakeMuffin(Of Relume)
@@ -14,8 +15,16 @@ Public Class Relume
     Dim WithEvents DayTimer As Timer
     Dim DayCount As Integer = 0
     Dim WithEvents ActionTimer As Timer
-    Dim Stats As New Stats
+    Dim Stats As Stats
 
+    'ACIDRAIN
+    Dim RainSpawnBlocks As New List(Of RelumeBlock)
+    Dim AcidRain As Boolean = False
+    Dim AcidLeft As Integer = 0
+
+    'TRAP
+    Dim TrapSpawnBlocks As New List(Of RelumeBlock)
+    Dim Trap As Boolean = False
 
     Dim WithEvents GameTimer As Timer
     Dim SpecialBlockList As New List(Of RelumeBlock)
@@ -28,12 +37,18 @@ Public Class Relume
         Events.Bind(Of MovePlayerEvent)(AddressOf MovePlayer)
         Events.Bind(Of AutoTextPlayerEvent)(AddressOf AutoTextPlayer)
         Events.Bind(Of PlaceWorldEvent)(AddressOf PlaceWorld)
+
+        Events.Bind(Of RelumeJumpEvent)(AddressOf JumpPlayer)
+        Events.Bind(Of RelumeDownEvent)(AddressOf DownPlayer)
     End Sub
 
     Private Sub JoinComplete(ByVal sender As Object, ByVal e As JoinCompleteRoomEvent)
-        DayTimer = GetTimer(200000)
-        ActionTimer = GetTimer(500)
+        Stats = EnablePart(Of Stats)()
+        DayTimer = GetTimer(100000)
+        ActionTimer = GetTimer(100)
         DayTimer.Start()
+        LoadAction()
+        ActionTimer.Start()
     End Sub
 
     Private Sub PlaceWorld(ByVal sender As Object, ByVal e As PlaceWorldEvent)
@@ -53,45 +68,49 @@ Public Class Relume
         'ON LEFT / RIGHT PRESS
         If Not xM = 0 Then
             'REMOVE TREE
-            If WorldService(Layer.Foreground, x + xM, y).Block = Block.Factory4 Then
-                CutThisTree(New RelumeBlock(Layer.Foreground, x + xM, y, Block.Factory4))
+            If WorldService(Layer.Foreground, x + xM, y).Block = Block.BrickPaleBrown Then
+                UploadService.UploadBlock(Layer.Foreground, x + xM, y, Block.Factory1)
+            ElseIf WorldService(Layer.Foreground, x + xM, y).Block = Block.Factory1 Then
+                CutThisTree(New RelumeBlock(Layer.Foreground, x + xM, y))
             End If
         End If
 
         'ON JUMP
         If yS = -52 Then
-            'REMOVE GRASS 
-            If WorldService(Layer.Foreground, x, y).Block = Block.DecorSpring2011Grass2 Then
-                RemoveBlock(New RelumeBlock(Layer.Foreground, x, y))
-            End If
+            Events.Raise(New RelumeJumpEvent(p, x, y))
         End If
 
         'ON DOWN ON DOT
-        If yM = 1 And Not p.IsGod Then
-            'CHECK FOR FIREPLACE
-            If WorldService(Layer.Foreground, x, y + 1).Block = Block.SciFiBrown Then
-                If WorldService(Layer.Foreground, x + 2, y + 1).Block = Block.GravityNothing Then
-                    Chatter.Teleport(p.Username, x + 2, y)
-                ElseIf WorldService(Layer.Foreground, x - 2, y + 1).Block = Block.GravityNothing Then
-                    Chatter.Teleport(p.Username, x - 2, y + 1)
-                Else
-                    Chatter.Teleport(p.Username, 86, 81)
-                End If
+        If yM = 1 Then
+            Events.Raise(New RelumeDownEvent(p, x, y))
+        End If
+    End Sub
+
+    Private Sub JumpPlayer(ByVal sender As Object, ByVal e As RelumeJumpEvent)
+        Dim x As Integer = e.BlockX
+        Dim y As Integer = e.BlockY
+
+        'REMOVE GRASS 
+        If WorldService(Layer.Foreground, x, y).Block = Block.DecorSpring2011Grass2 Then
+            RemoveBlock(New RelumeBlock(Layer.Foreground, x, y))
+        End If
+    End Sub
+
+    Private Sub DownPlayer(ByVal sender As Object, ByVal e As RelumeDownEvent)
+        Dim p As Player = e.Player
+        Dim x As Integer = e.BlockX
+        Dim y As Integer = e.BlockY
+
+        'CHECK FOR FIREPLACE
+        If WorldService(Layer.Foreground, x, y + 1).Block = Block.SciFiBrown Then
+            If WorldService(Layer.Foreground, x + 2, y + 1).Block = Block.GravityNothing Then
+                Chatter.Teleport(p.Username, x + 2, y)
+            ElseIf WorldService(Layer.Foreground, x - 2, y + 1).Block = Block.GravityNothing Then
+                Chatter.Teleport(p.Username, x - 2, y + 1)
+            Else
+                Chatter.Teleport(p.Username, 86, 81)
             End If
-            UploadService.UploadBlock(x, y, Block.HazardFire)
-            UploadService.UploadBlock(Layer.Background, x, y, Block.BgPastelYellow)
-            UploadService.UploadBlock(Layer.Background, x - 1, y, Block.BgPastelLimeGreen)
-            UploadService.UploadBlock(Layer.Background, x + 1, y, Block.BgPastelLimeGreen)
-            UploadService.UploadBlock(Layer.Background, x, y - 1, Block.BgPastelLimeGreen)
-            UploadService.UploadBlock(Layer.Background, x - 2, y, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x + 2, y, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x - 2, y - 1, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x + 2, y - 1, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x - 1, y - 1, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x + 1, y - 1, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x - 1, y - 2, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x + 1, y - 2, Block.BgNormalLightBlue)
-            UploadService.UploadBlock(Layer.Background, x, y - 2, Block.BgNormalLightBlue)
+            Dim Fire As New RelumeFire(UploadService, New RelumeBlock(Layer.Foreground, x, y))
         End If
     End Sub
 
@@ -100,18 +119,63 @@ Public Class Relume
             Dim p As Player = e.Player
             Dim x As Integer = p.BlockX
             Dim y As Integer = p.BlockY
-            Dim b As Block = WorldService(Layer.Foreground, x + 1, y + 1).Block
-            If 33 < b And b < 37 Then
-                If Stats.Wood > 50 Then
-                    UploadService.UploadBlock(Layer.Foreground, x + 1, y, Block.GravityDot)
-                    UploadService.UploadBlock(Layer.Foreground, x + 1, y + 1, Block.SciFiBrown)
-                    Stats.Wood -= 50
-                    Chatter.Chat(p.Username.ToUpper & " made a Fireplace! (Cost: 50; Left: " & Stats.Wood & ")")
-                    UploadService.UploadLabel(86, 81, LabelBlock.DecorationSign, "Wood: " & Stats.Wood & " | Exp: " & Stats.Experience)
+            Dim b As Block = WorldService(Layer.Foreground, x, y + 1).Block
+
+            If Stats.Wood >= 100 And Stats.WorldLevel = 0 Then
+                Dim buildable As Boolean = True
+                For i As Integer = p.BlockX - 2 To p.BlockX + 2
+                    If i > WorldService.RoomWidth - 1 Or i < 1 Then
+                        buildable = False
+                        Exit For
+                    Else
+                        Dim t As Block = WorldService(Layer.Foreground, i, y + 1).Block
+                        If Not 33 < t And t < 37 Then
+                            buildable = False
+                            Exit For
+                        End If
+                    End If
+                Next
+                If buildable Then
+
+                    UploadService.UploadBlock(x, y + 1, Block.Factory3)
+                    UploadService.UploadBlock(x + 1, y + 1, Block.BasicGrey)
+                    UploadService.UploadBlock(x + 2, y + 1, Block.BasicGrey)
+                    UploadService.UploadBlock(x - 1, y + 1, Block.BasicGrey)
+                    UploadService.UploadBlock(x - 2, y + 1, Block.BasicGrey)
+
+                    UploadService.UploadBlock(x, y, Block.BgBrickSaturatedBrown)
+                    UploadService.UploadBlock(x + 1, y, Block.BgBrickSaturatedBrown)
+                    UploadService.UploadBlock(x - 1, y, Block.BgBrickSaturatedBrown)
+                    UploadService.UploadBlock(x + 2, y, Block.BgMedieval)
+                    UploadService.UploadBlock(x - 2, y, Block.BgMedieval)
+
+                    UploadService.UploadBlock(x, y - 1, Block.BgBrickSaturatedBrown)
+                    UploadService.UploadBlock(x + 1, y - 1, Block.BgBrickSaturatedBrown)
+                    UploadService.UploadBlock(x - 1, y - 1, Block.BgBrickSaturatedBrown)
+                    UploadService.UploadBlock(x + 2, y - 1, Block.BrickSaturatedBrown)
+                    UploadService.UploadBlock(x - 2, y - 1, Block.BrickSaturatedBrown)
+
+                    UploadService.UploadBlock(x, y - 2, Block.BrickSaturatedBrown)
+                    UploadService.UploadBlock(x + 1, y - 2, Block.BrickSaturatedBrown)
+                    UploadService.UploadBlock(x + 2, y - 2, Block.BrickSaturatedBrown)
+                    UploadService.UploadBlock(x - 1, y - 2, Block.BrickSaturatedBrown)
+                    UploadService.UploadBlock(x - 2, y - 2, Block.BrickSaturatedBrown)
+
+                    Stats.Wood -= 100
+                    Stats.StatsX = x
+                    Stats.StatsY = y
+                    Stats.WorldLevel += 1
+                    Stats.UpdateSign()
+                    Chatter.Chat(p.Username.ToUpper & " made the shelter! (Cost: 100; Left: " & Stats.Wood & ")")
                 End If
             End If
         End If
 
+        'UploadService.UploadBlock(Layer.Foreground, x + 1, y, Block.GravityDot)
+        'UploadService.UploadBlock(Layer.Foreground, x + 1, y + 1, Block.SciFiBrown)
+        'Stats.Wood -= 50
+        'Chatter.Chat(p.Username.ToUpper & " made a Fireplace! (Cost: 50; Left: " & Stats.Wood & ")")
+        'UploadService.UploadLabel(86, 81, LabelBlock.DecorationSign, "Wood: " & Stats.Wood & " | Exp: " & Stats.Experience)
     End Sub
 
     Private Sub CutThisTree(rB As RelumeBlock)
@@ -146,52 +210,156 @@ Public Class Relume
         Dim tree As New RelumeTree(UploadService, rB.X, rB.Y)
     End Sub
 
-
     Private Sub DayTick() Handles DayTimer.Elapsed
-        DayCount += 1
-        Dim tempList As New List(Of RelumeBlock)
-        Dim b As Block
 
-        For y = WorldService.RoomHeight - 1 To 1 Step -1
-            For x As Integer = 1 To WorldService.RoomWidth - 1
-                If WorldService(Layer.Background, x, y).Block = WorldService(Layer.Background, 86, 81).Block Then
-                    tempList.Add(New RelumeBlock(Layer.Background, x, y))
+        Select Case DayCount
+            Case 0
+            Case 1
+            Case 2
+            Case 3
+            Case 4
+            Case 5
+            Case 6
+            Case 7
+            Case 8
+            Case 9
+                Chatter.Chat("Night rises..")
+            Case 10
+                Chatter.Chat("Find a shelter!")
+            Case 11
+                Chatter.Chat("O.o")
+            Case 12
+                Chatter.Chat("Its night.")
+        End Select
+
+        DayCount += 1
+
+        'Dim BackgroundList As New List(Of RelumeBlock)
+        'For y = WorldService.RoomHeight - 1 To 1 Step -1
+        '    For x As Integer = 1 To WorldService.RoomWidth - 1
+        '        If WorldService(Layer.Background, x, y).Block = WorldService(Layer.Background, 6, 6).Block Then
+        '            BackgroundList.Add(New RelumeBlock(Layer.Background, x, y))
+        '        End If
+        '    Next
+        'Next
+
+        'If DayCount = 0 Then
+        '    b = Block.BgPastelLightBlue
+        'ElseIf DayCount = 1 Then
+        '    b = Block.BgPastelDarkerBlue
+        'ElseIf DayCount = 2 Then
+        '    b = Block.BgNormalLightBlue
+        'ElseIf DayCount = 3 Then
+        '    b = Block.BgDarkLightBlue
+        'ElseIf DayCount = 4 Then
+        '    b = Block.BgNormalDarkBlue
+        'ElseIf DayCount = 5 Then
+        '    Chatter.Chat("Its getting dark..")
+        '    b = Block.BgDarkDarkBlue
+
+        'ElseIf DayCount = 6 Then
+        '    Chatter.Chat("Its getting even darker..")
+        '    b = Block.BgMarsNoStars
+        'End If
+    End Sub
+
+    Private Sub LoadAction()
+        For x As Integer = 0 To WorldService.RoomWidth - 1
+            For y As Integer = 0 To WorldService.RoomHeight - 1
+                Dim b As Block = WorldService(Layer.Foreground, x, y).Block
+                If Stats.RainBlocks.Contains(b) Then
+                    RainSpawnBlocks.Add(New RelumeBlock(Layer.Foreground, x, y))
+                ElseIf Stats.TrapBlocks.Contains(b) Then
+                    TrapSpawnBlocks.Add(New RelumeBlock(Layer.Foreground, x, y))
                 End If
             Next
-        Next
-
-        If DayCount = 0 Then
-            b = Block.BgPastelLightBlue
-        ElseIf DayCount = 1 Then
-            b = Block.BgPastelDarkerBlue
-        ElseIf DayCount = 2 Then
-            b = Block.BgNormalLightBlue
-        ElseIf DayCount = 3 Then
-            b = Block.BgDarkLightBlue
-        ElseIf DayCount = 4 Then
-            b = Block.BgNormalDarkBlue
-        ElseIf DayCount = 5 Then
-            Chatter.Chat("Its getting dark..")
-            b = Block.BgDarkDarkBlue
-
-        ElseIf DayCount = 6 Then
-            Chatter.Chat("Its getting even darker..")
-            b = Block.BgMarsNoStars
-        End If
-
-        For Each rB In tempList
-            UploadService.UploadBlock(rB.Layer, rB.X, rB.Y, b)
         Next
     End Sub
 
     Private Sub ActionTick() Handles ActionTimer.Elapsed
+        RainTick()
+        TrapTick()
+    End Sub
 
+    Private Sub TrapTick()
+        If Random.Next(0, 100) = 1 Then
+            For Each rB In TrapSpawnBlocks
+                If Trap Then
+                    UploadService.UploadBlock(Layer.Foreground, rB.X, rB.Y, Block.Special1)
+                Else
+                    UploadService.UploadBlock(Layer.Foreground, rB.X, rB.Y, Block.GravityNothing)
+                End If
+            Next
+            If Trap Then
+                Trap = False
+            Else
+                Trap = True
+            End If
+        End If
+    End Sub
+
+    Private Sub RainTick()
+
+        For x As Integer = 0 To WorldService.RoomWidth - 1
+            For y As Integer = 0 To WorldService.RoomHeight - 1
+                If WorldService(Layer.Foreground, x, y).BlockType = BlockType.Portal Then
+                    If WorldService(Layer.Foreground, x, y).PortalId = 105 Then
+                        If Random.Next(0, 3) = 2 Then
+                            UploadService.UploadBlock(Layer.Foreground, x, y, Block.GravityNothing)
+                            If WorldService(Layer.Foreground, x, y + 1).Block = Block.GravityNothing Then
+                                UploadService.UploadPortal(x, y + 1, PortalBlock.BlockPortal, 105, 5, PortalRotation.Down)
+                            End If
+                        End If
+                    End If
+                End If
+            Next
+        Next
+
+        If AcidRain Then
+            For Each rB In RainSpawnBlocks
+                If Random.Next(0, 100) = 2 Then
+                    UploadService.UploadPortal(rB.X, rB.Y + 1, PortalBlock.BlockPortal, 105, 5, PortalRotation.Down)
+                End If
+            Next
+
+            AcidLeft -= 1
+            If AcidLeft < 1 Then
+                AcidRain = False
+            End If
+
+        Else
+
+            If Random.Next(0, 900) = 1 Then
+
+                'MAKE SURE NO OLD PORTAL IS THERE
+                For x As Integer = 0 To WorldService.RoomWidth - 1
+                    For y As Integer = 0 To WorldService.RoomHeight - 1
+                        If WorldService(Layer.Foreground, x, y).BlockType = BlockType.Portal Then
+                            If WorldService(Layer.Foreground, x, y).PortalId = 105 Then
+                                UploadService.UploadBlock(x, y, Block.GravityNothing)
+                            End If
+                        End If
+                    Next
+                Next
+
+                'START ACID
+                AcidRain = True
+                AcidLeft = Random.Next(200, 400)
+            End If
+        End If
     End Sub
 
     Private Sub RemoveBlock(rB As RelumeBlock)
         Stats.ItemAction(WorldService(rB.Layer, rB.X, rB.Y).Block)
-        UploadService.UploadBlock(rB.Layer, rB.X, rB.Y, Block.GravityNothing)
-        UploadService.UploadLabel(86, 81, LabelBlock.DecorationSign, "Wood: " & Stats.Wood & " | Exp: " & Stats.Experience)
+        rB.Block = Block.GravityNothing
+        Upload(rB, True)
+        Stats.UpdateSign()
+    End Sub
+
+    Public Sub Upload(b As RelumeBlock, important As Boolean)
+        Dim Block As UploadRequestEvent = UploadService.GetBlock(b.Layer, b.X, b.Y, b.Block)
+        If important Then Block.IsUrgent = True
+        Events.Raise(Block)
     End Sub
 
 #Region "old"
@@ -352,15 +520,35 @@ End Class
 
 
 Public Class Stats
+    Inherits CupCakeMuffinPart(Of Relume)
+
+    Public Property WorldLevel As Integer = 0
     Public Property Experience As Integer = 0
     Public Property Wood As Integer = 0
+    Public Property StatsX As Integer = 0
+    Public Property StatsY As Integer = 0
 
-    Public TreeBlocks As New List(Of Block) From {Block.BrickDarkGreen, Block.BrickLightGreen, Block.Factory4, Block.Factory3}
+    Public TreeBlocks As New List(Of Block) From
+        {Block.BrickPaleBrown, Block.BrickDarkGreen, Block.BrickLightGreen, Block.Factory1, Block.Factory4, Block.Factory3}
+    Public RainBlocks As New List(Of Block) From
+        {Block.MetalWhite}
+    Public TrapBlocks As New List(Of Block) From
+        {Block.Special1}
+
+    Public Sub UpdateSign()
+        If Not StatsX = 0 Then
+            UploadService.UploadLabel(StatsX, StatsY, LabelBlock.DecorationSign, "Wood: " & Wood & " | Exp: " & Experience)
+        End If
+    End Sub
 
     Public Sub ItemAction(b As Block)
         If TreeBlocks.Contains(b) Then
             Wood += 1
             Experience += 1
         End If
+    End Sub
+
+    Protected Overloads Overrides Sub Enable()
+
     End Sub
 End Class

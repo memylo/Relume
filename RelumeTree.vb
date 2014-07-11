@@ -10,10 +10,7 @@ Public Class RelumeTree
     Private Progress As Integer = 0
     Public WithEvents TreeTimer As New Timer
 
-
-    '   B
-    '  BBB
-    '   X
+#Region "Trees"
     Public Tree1 As New List(Of RelumeBlock) From {
         New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 1, Block.BrickDarkGreen),
@@ -21,14 +18,9 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, -1, 1, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 1, 1, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 2, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 
-    '   B
-    '  BBB
-    ' BBBBB
-    '  BBB
-    '   X
     Public Tree2 As New List(Of RelumeBlock) From {
         New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 1, Block.BrickDarkGreen),
@@ -44,7 +36,7 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, -1, 3, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 4, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 1, 3, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 
     Public Tree3 As New List(Of RelumeBlock) From {
@@ -55,7 +47,7 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, 0, 2, Block.BrickDarkGreen),
         New RelumeBlock(Layer.Foreground, -1, 2, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 3, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 
     Public Tree4 As New List(Of RelumeBlock) From {
@@ -73,7 +65,7 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, 1, 4, Block.BrickDarkGreen),
         New RelumeBlock(Layer.Foreground, 0, 5, Block.BrickDarkGreen),
         New RelumeBlock(Layer.Foreground, 1, 5, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 
     Public Tree5 As New List(Of RelumeBlock) From {
@@ -92,7 +84,7 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, 0, 5, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, -1, 5, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 1, 5, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 
     Public Tree6 As New List(Of RelumeBlock) From {
@@ -107,7 +99,7 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, 0, 3, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, -1, 3, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 4, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 
     Public Tree7 As New List(Of RelumeBlock) From {
@@ -129,8 +121,9 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, -2, 4, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 2, 4, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 1, 5, Block.BrickLightGreen),
-        New RelumeBlock(Layer.Foreground, 0, 0, Block.Factory4)
+        New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
+#End Region
 
     Private TreeList As New List(Of List(Of RelumeBlock)) From {Tree1, Tree2, Tree3, Tree4, Tree5, Tree6, Tree7}
 
