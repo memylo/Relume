@@ -1,0 +1,8 @@
+C:\Users\MeMylo\Documents\GitHub\relume\relume\bin\Release\relume.dll
+C:\Users\MeMylo\Documents\GitHub\relume\relume\bin\Release\relume.pdb
+C:\Users\MeMylo\Documents\GitHub\relume\relume\bin\Release\relume.xml
+C:\Users\MeMylo\Documents\GitHub\relume\relume\obj\Release\relume.Resources.resources
+C:\Users\MeMylo\Documents\GitHub\relume\relume\obj\Release\Relume.vbproj.GenerateResource.Cache
+C:\Users\MeMylo\Documents\GitHub\relume\relume\obj\Release\relume.dll
+C:\Users\MeMylo\Documents\GitHub\relume\relume\obj\Release\relume.xml
+C:\Users\MeMylo\Documents\GitHub\relume\relume\obj\Release\relume.pdb

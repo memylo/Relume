@@ -6,4 +6,3 @@ C:\Users\MeMylo\Documents\GitHub\Relume\relume\obj\Debug\relume.vbproj.GenerateR
 C:\Users\MeMylo\Documents\GitHub\Relume\relume\obj\Debug\relume.dll
 C:\Users\MeMylo\Documents\GitHub\Relume\relume\obj\Debug\relume.xml
 C:\Users\MeMylo\Documents\GitHub\Relume\relume\obj\Debug\relume.pdb
-C:\Users\MeMylo\Documents\GitHub\Relume\relume\obj\Debug\Relume.vbprojResolveAssemblyReference.cache

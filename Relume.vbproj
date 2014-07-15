@@ -108,12 +108,18 @@
       <HintPath>..\packages\CupCake.1.5.0\lib\net40\PlayerIOClient.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -127,7 +133,11 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\ExperienceCommand.vb" />
+    <Compile Include="Commands\StoneCommand.vb" />
+    <Compile Include="Commands\WoodCommand.vb" />
     <Compile Include="Events\RelumeDownEvent.vb" />
+    <Compile Include="Helpers\RelumePrice.vb" />
     <Compile Include="Relume.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -144,10 +154,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="RelumeBlock.vb" />
+    <Compile Include="Helpers\RelumeBlock.vb" />
     <Compile Include="Events\RelumeJumpEvent.vb" />
-    <Compile Include="RelumeFire.vb" />
-    <Compile Include="RelumeTree.vb" />
+    <Compile Include="Helpers\RelumeStats.vb" />
+    <Compile Include="Helpers\RelumeTree.vb" />
+    <Compile Include="Helpers\RelumeUpload.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

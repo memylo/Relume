@@ -3,14 +3,17 @@ Imports CupCake.Messages.Blocks
 Imports System.Timers
 
 Public Class RelumeTree
+    'INIT SOME MORE RANDOM CRAPPY OMGZFZ STUFF ;_; CRAP FUCK BADWORD
     Private Random As New Random
     Private UploadService As UploadService
-    Private RootBlock As RelumeBlock
-    Private Version As Integer
-    Private Progress As Integer = 0
-    Public WithEvents TreeTimer As New Timer
 
+    'INIT TREE STUFF
+    Private TreeVersion As Integer
+    Private TreeProgress As Integer = 0
+    Private TreeRootBlock As RelumeBlock
+    Public WithEvents TreeTimer As New Timer
 #Region "Trees"
+    'INIT ALL POSSIBLE TREES
     Public Tree1 As New List(Of RelumeBlock) From {
         New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickLightGreen),
         New RelumeBlock(Layer.Foreground, 0, 1, Block.BrickDarkGreen),
@@ -124,32 +127,44 @@ Public Class RelumeTree
         New RelumeBlock(Layer.Foreground, 0, 0, Block.BrickPaleBrown)
     }
 #End Region
-
     Private TreeList As New List(Of List(Of RelumeBlock)) From {Tree1, Tree2, Tree3, Tree4, Tree5, Tree6, Tree7}
 
     Public Sub New(uploadService As UploadService, x As Integer, y As Integer, Optional version As Integer = 0)
+
+        'IF VERSION IS NOTHING, GET RANDOM, IF NOT USE THAT..
         If version = 0 Then
-            Me.Version = Random.Next(0, TreeList.Count + 1)
+            Me.TreeVersion = Random.Next(0, TreeList.Count)
         Else
-            Me.Version = version
+            Me.TreeVersion = version
         End If
 
+        'INIT OTHER STUFF & START TREE RESTORE PROCESS
         Me.UploadService = uploadService
-        Me.RootBlock = New RelumeBlock(Layer.Foreground, x, y)
-        Me.TreeTimer.Interval = 2000
+        Me.TreeRootBlock = New RelumeBlock(Layer.Foreground, x, y)
+        Me.TreeTimer.Interval = 1000
         Me.TreeTimer.Start()
+
+        'UPLOAD A TREE °=°
+        uploadService.UploadBlock(x, y, Block.DecorChristmas2010SnowFreeTree)
     End Sub
 
     Public Sub TreeTick() Handles TreeTimer.Elapsed
-        MakeATreeProgress(RootBlock.X, RootBlock.Y)
+        'FOR EVERY TREE TICK MAKE A TREE PROGRESS LIKE A BAWS
+        MakeATreeProgress(TreeRootBlock.X, TreeRootBlock.Y)
     End Sub
 
     Public Sub MakeATreeProgress(x As Integer, y As Integer)
-        Dim rB As RelumeBlock = TreeList(Version)(Progress)
+
+        'PROPABLY I AM TO TIRED TO COMMENT THIS, JUST INITING THE RIGHT BLOCK AT THE RIGHT TIME zZZZzzZ
+        Dim rB As RelumeBlock = TreeList(TreeVersion)(TreeProgress)
+        If Not TreeProgress > TreeList(TreeVersion).Count Then
+
+            'UPLOAD PROGRESS
             UploadService.UploadBlock(x + rB.X, y - rB.Y, rB.Block)
-        If Not Progress = TreeList(Version).Count Then
-            Progress += 1
+            TreeProgress += 1
         Else
+
+            'IF NO PROGRESS POSSIBLE, STOP PROGRESS (MAKES SENSE, HUH?:D)
             TreeTimer.Stop()
         End If
     End Sub
